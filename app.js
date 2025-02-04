@@ -40,14 +40,14 @@ app.use('/api/reportes', reportesRoutes);
 
 
 // Servidor
-const PORT = process.env.PORT || 3000 || "0.0.0.0";
+const PORT = process.env.PORT || 3000;
 
 // Iniciar el servidor solo si la conexión es exitosa
 (async () => {
     try {
       await sequelize.authenticate();
       console.log('✅ Servidor conectado a la base de datos.');
-      app.listen(PORT, "0.0.0.0", () => console.log('🚀 Servidor corriendo en http://localhost:3000'));
+      app.listen(PORT, () => console.log('🚀 Servidor corriendo en http://localhost:3000'));
     } catch (error) {
       console.error('❌ No se pudo conectar a la base de datos:', error);
     }
