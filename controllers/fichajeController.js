@@ -1,6 +1,6 @@
 const { Fichaje, Usuario } = require('../models');
 const moment = require('moment-timezone');
-const { Op, Model } = require('sequelize');
+const { Op, Model, where } = require('sequelize');
 const axios = require('axios');
 
 //Función para obtener la dirección a partir de las coordenadas
@@ -38,6 +38,15 @@ const registrarFichaje = async (req, res) => {
     //Obtener la direccion a partir de las coordenadas
     const direccion = await obtenerDireccion(coordenadas);
     console.log('Direccion enviada al modelo Fichaje:', direccion);
+    const ultimoFichaje = await Fichaje.findOne({
+      where: {  userId: req.user.id },
+      order: [['fechaHora', 'DESC']],
+    });
+
+    let tipoFichaje = 'entrada'; // Por defecto, es una entrada
+    if (ultimoFichaje && ultimoFichaje.tipo === 'entrada') {
+      tipoFichaje = 'salida'; // Si el último fichaje fue una entrada, entonces es una salida
+    }
 
     //Crear el fichaje con la direccion
     const fichaje = await Fichaje.create({
@@ -45,6 +54,7 @@ const registrarFichaje = async (req, res) => {
       fechaHora: moment.utc().toDate(), // Hora del fichaje
       coordenadas, // Coordenadas recibidas
       direccion, // Dirección obtenida
+      tipo: tipoFichaje,
     });
 
     res.status(201).json({ mensaje: 'Fichaje registrado', fichaje });

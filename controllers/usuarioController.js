@@ -9,6 +9,9 @@ const crearUsuario = async (req, res) => {
     const usuario = await Usuario.create({ nombre, dni, password: hashedPassword });
     res.status(201).json({ mensaje: 'Usuario creado con éxito', usuario });
   } catch (error) {
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({ mensaje: 'El DNI ya está registrado' });
+    }
     console.error('Error al crear usuario:', error);
     res.status(500).json({ mensaje: 'Error al crear usuario', error });
   }

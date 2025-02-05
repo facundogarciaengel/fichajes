@@ -7,6 +7,9 @@ const usuarioRoutes = require('./routes/usuario');
 const moment = require('moment-timezone');
 const fichajeRoutes = require('./routes/fichaje');
 const reportesRoutes = require('./routes/reporteRoutes');
+const morgan = require('morgan');
+
+
 
 
 dotenv.config();
@@ -18,7 +21,7 @@ app.use(cors(({
 })));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
+app.use(morgan('dev'));
 
 // Ruta de prueba
 app.get('/', (req, res) => res.send('Backend funcionando'));
