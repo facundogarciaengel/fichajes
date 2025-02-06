@@ -83,31 +83,26 @@ const listarFichajes = async (req, res) => {
     const where = {};
     if (startDate || endDate) {
       where.fechaHora = {};
-      if (startDate) {
-        where.fechaHora[Op.gte] = new Date(startDate); // Desde esta fecha
-      }
-      if (endDate) {
-        where.fechaHora[Op.lte] = new Date(endDate); // Hasta esta fecha
-      }
+      if (startDate) where.fechaHora[Op.gte] = new Date(startDate);
+      if (endDate) where.fechaHora[Op.lte] = new Date(endDate);
     }
 
     const usuarioWhere = {};
-    if (nombre) {
-      usuarioWhere.nombre = { [Op.like]: `%${nombre}%` }; // Filtro por nombre
-    }
-    if (dni) {
-      usuarioWhere.dni = dni; // Filtro por DNI
+    if (nombre) usuarioWhere.nombre = { [Op.like]: `%${nombre}%` };
+    if (dni) usuarioWhere.dni = dni;
+
+    // 🔹 Aplicar restricciones según el rol del usuario
+    if (req.user.rol !== "admin") {
+      where.userId = req.user.id; // Un usuario normal solo puede ver sus fichajes
+
+      // Si es usuario normal, debe proporcionar al menos un filtro
+      if (!Object.keys(where).length && !Object.keys(usuarioWhere).length) {
+        return res.status(400).json({ mensaje: "Debe proporcionar al menos un filtro para buscar fichajes" });
+      }
     }
 
-    if (!Object.keys(where).length && !Object.keys(usuarioWhere).length) {
-      return res.status(400).json({ mensaje: "Debe proporcionar al menos un filtro para buscar fichajes" });
-    }
-
-    // 🔹 Filtro por usuario según rol
-    if (req.user.rol !== 'admin') {
-      where.userId = req.user.id; // Si no es admin, solo ve sus fichajes
-    }
-
+    // 🔹 Si es admin y no pasó filtros, limitamos la consulta a 100 fichajes
+    const limiteResultados = req.user.rol === "admin" && !Object.keys(where).length ? 100 : null;
 
     // Obtener fichajes de la base de datos
     const fichajes = await Fichaje.findAll({
@@ -115,18 +110,19 @@ const listarFichajes = async (req, res) => {
       include: [
         {
           model: Usuario,
-          as: 'usuario',
+          as: "usuario",
           where: Object.keys(usuarioWhere).length ? usuarioWhere : undefined,
         },
       ],
       order: [["createdAt", "DESC"]],
+      limit: limiteResultados, // 🚀 Si es admin y no usó filtros, traemos máximo 100 registros
     });
 
     // Convertir fechas
     const fichajesConvertidos = fichajes.map((fichaje) => ({
       ...fichaje.toJSON(),
       fechaHora: moment(fichaje.fechaHora).utcOffset("-03:00").format("YYYY-MM-DD HH:mm:ss"),
-      direccion: fichaje.direccion, // Incluimos la dirección en el listado
+      direccion: fichaje.direccion,
     }));
 
     res.status(200).json({ mensaje: "Fichajes listados con éxito", fichajes: fichajesConvertidos });
@@ -135,6 +131,7 @@ const listarFichajes = async (req, res) => {
     res.status(500).json({ mensaje: "Error al listar fichajes", error: error.message });
   }
 };
+
 
 
 module.exports = { registrarFichaje, listarFichajes };

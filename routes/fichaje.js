@@ -11,3 +11,4 @@ router.get('/fichajes', authenticateToken, listarFichajes);
 
 module.exports = router;
 
+ 
