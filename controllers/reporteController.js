@@ -28,6 +28,10 @@ const exportarFichajesCSV = async (req, res) => {
       include: [{ model: Usuario, as: 'usuario', where: usuarioWhere }],
       order: [['createdAt', 'DESC']],
     });
+    //Verificar si hay fichajes antes de formatear datos
+    if (fichajes.length === 0) {
+      return res.status(404).json({ mensaje: 'No hay fichajes para exportar' });
+    }
 
     // Formatear datos
     const fichajesFormat = fichajes.map((fichaje) => ({

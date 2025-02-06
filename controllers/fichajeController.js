@@ -103,6 +103,12 @@ const listarFichajes = async (req, res) => {
       return res.status(400).json({ mensaje: "Debe proporcionar al menos un filtro para buscar fichajes" });
     }
 
+    // 🔹 Filtro por usuario según rol
+    if (req.user.rol !== 'admin') {
+      where.userId = req.user.id; // Si no es admin, solo ve sus fichajes
+    }
+
+
     // Obtener fichajes de la base de datos
     const fichajes = await Fichaje.findAll({
       where,
