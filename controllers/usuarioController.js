@@ -86,8 +86,6 @@ const cambiarRolUsuario = async (req, res) => {
   }
 };
 
-module.exports = { cambiarRol };
-
 
 
 
