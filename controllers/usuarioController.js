@@ -55,7 +55,7 @@ const iniciarSesion = async (req, res) => {
   }
 };
 
-const { Usuario } = require('../models');
+
 
 const cambiarRolUsuario = async (req, res) => {
   const { id } = req.params;
