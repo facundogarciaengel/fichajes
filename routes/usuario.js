@@ -2,6 +2,9 @@ const express = require('express');
 const { crearUsuario, iniciarSesion, cambiarRolUsuario } = require('../controllers/usuarioController');
 const router = express.Router();
 const authenticateToken = require("../midleware/authMiddleware");
+const bcrypt = require('bcryptjs');
+const { Usuario } = require('../models');
+
  
 
 router.post('/registro', crearUsuario);
