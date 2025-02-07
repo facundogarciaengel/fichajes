@@ -45,12 +45,13 @@ const iniciarSesion = async (req, res) => {
     console.log("Usuario encontrado:", usuario);
 
     // 🚀 Generamos el token con ID y ROL
-    const token = jwt.sign(
-      { id: usuario.id, rol: usuario.rol },
-      process.env.JWT_SECRET + "test", // 🔥 Modificación temporal para ver si Render usa bien la variable
-      { expiresIn: "1h" }
-    );
-    
+    const payload = { id: usuario.id, rol: usuario.rol };
+console.log("Payload antes de firmar el token:", payload);
+
+const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+console.log("Token generado:", token);
+
 
     const decoded = jwt.decode(token);
     console.log("Token generado:", decoded);
