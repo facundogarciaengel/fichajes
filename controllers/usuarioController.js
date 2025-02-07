@@ -30,8 +30,8 @@ const iniciarSesion = async (req, res) => {
 
   try {
     const usuario = await Usuario.findOne({
-       where: { dni },
-       attributes: ["id", "dni", "password", "rol"] // ✅ Aseguramos que rol se trae de la DB
+      where: { dni },
+      attributes: ["id", "dni", "password", "rol"] // ✅ Nos aseguramos de traer el rol
     });
 
     if (!usuario) {
@@ -43,10 +43,17 @@ const iniciarSesion = async (req, res) => {
       return res.status(401).json({ mensaje: "Contraseña incorrecta" });
     }
 
-    // ✅ TEMPORALMENTE, DEVOLVEMOS EL USUARIO EN LA RESPUESTA PARA VER EL ROL
+    // 🚀 Generamos el token con ID y ROL
+    const token = jwt.sign(
+      { id: usuario.id, rol: usuario.rol }, // ✅ Aquí agregamos el rol al token
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
     res.json({
       mensaje: "Inicio de sesión exitoso",
-      usuario,  // 👀 Esto nos dirá si el usuario tiene el rol correcto en la DB
+      token, // ✅ Devuelve el token correcto
+      usuario: { id: usuario.id, rol: usuario.rol } // ✅ Para verificar el rol en la respuesta
     });
 
   } catch (error) {
