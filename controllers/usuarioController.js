@@ -31,8 +31,10 @@ const iniciarSesion = async (req, res) => {
   try {
     const usuario = await Usuario.findOne({
       where: { dni },
-      attributes: ["id", "dni", "password", "rol"] // ✅ Nos aseguramos de traer el rol
-    });
+      attributes: ["id", "dni", "password", "rol"],
+      raw: true  // ✅ Esto convierte el resultado en un objeto plano
+   });
+   
 
     if (!usuario) {
       return res.status(404).json({ mensaje: "Usuario no encontrado" });
