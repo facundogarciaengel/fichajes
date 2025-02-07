@@ -24,7 +24,6 @@ module.exports = { crearUsuario };
 const iniciarSesion = async (req, res) => {
   const { dni, password } = req.body;
 
-  // Validaciones básicas
   if (!dni || !password) {
     return res.status(400).json({ mensaje: "DNI y contraseña son obligatorios" });
   }
@@ -32,8 +31,8 @@ const iniciarSesion = async (req, res) => {
   try {
     const usuario = await Usuario.findOne({
        where: { dni },
-       attributes: ["id", "dni", "password", "rol"] // 🔥 Asegurar que traiga 'rol'
-      });
+       attributes: ["id", "dni", "password", "rol"] // ✅ Aseguramos que rol se trae de la DB
+    });
 
     if (!usuario) {
       return res.status(404).json({ mensaje: "Usuario no encontrado" });
@@ -44,21 +43,18 @@ const iniciarSesion = async (req, res) => {
       return res.status(401).json({ mensaje: "Contraseña incorrecta" });
     }
 
-    // ✅ Generar token con ID y rol
-    const token = jwt.sign(
-      { id: usuario.id, rol: usuario.rol }, // Se agrega el rol
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    // ✅ TEMPORALMENTE, DEVOLVEMOS EL USUARIO EN LA RESPUESTA PARA VER EL ROL
+    res.json({
+      mensaje: "Inicio de sesión exitoso",
+      usuario,  // 👀 Esto nos dirá si el usuario tiene el rol correcto en la DB
+    });
 
-    res.json({ mensaje: "Inicio de sesión exitoso",
-       token,
-        usuario: { id: usuario.id, rol: usuario.rol } });
   } catch (error) {
     console.error("Error al iniciar sesión:", error);
     res.status(500).json({ mensaje: "Error al iniciar sesión", error: error.message });
   }
 };
+
 
 
 
