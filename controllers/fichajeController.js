@@ -68,7 +68,7 @@ const registrarFichaje = async (req, res) => {
 
 const listarFichajes = async (req, res) => {
   try {
-    const { startDate, endDate, nombre, dni } = req.query;
+    const { startDate, endDate, nombre, dni, userId } = req.query; // ✅ Agregado userId como filtro extra
 
     // ✅ Validaciones de fechas
     if (startDate && isNaN(Date.parse(startDate))) {
@@ -81,7 +81,7 @@ const listarFichajes = async (req, res) => {
       return res.status(400).json({ mensaje: "La fecha de inicio no puede ser mayor que la fecha de fin" });
     }
 
-    // ✅ Construir condición de filtro
+    // ✅ Construcción de filtros
     const where = {};
     if (startDate || endDate) {
       where.fechaHora = {};
@@ -89,20 +89,25 @@ const listarFichajes = async (req, res) => {
       if (endDate) where.fechaHora[Op.lte] = new Date(endDate);
     }
 
-    // ✅ Filtro por usuario (si busca por nombre o DNI)
     const usuarioWhere = {};
     if (nombre) usuarioWhere.nombre = { [Op.like]: `%${nombre}%` };
     if (dni) usuarioWhere.dni = dni;
+    if (userId) usuarioWhere.id = userId; // Intento de filtrar por ID
 
-    // ✅ Aplicar restricciones según el rol del usuario
+    // 🚨 Restricciones para usuarios que no son administradores
     if (req.user.rol !== "admin") {
-      where.userId = req.user.id; // Un usuario normal solo puede ver sus fichajes
-      // Si es usuario normal, debe proporcionar al menos un filtro
-      if (!Object.keys(where).length && !Object.keys(usuarioWhere).length) {
-        return res.status(400).json({
-          mensaje: "Debe proporcionar al menos un filtro para buscar fichajes",
+      // 🚫 Bloquear filtros que intenten acceder a otros usuarios
+      if (
+        (dni && dni !== req.user.dni) || 
+        (nombre && nombre !== req.user.nombre) || 
+        (userId && userId !== req.user.id.toString()) 
+      ) {
+        return res.status(403).json({
+          mensaje: "No tienes permisos para ver fichajes de otros usuarios.",
         });
       }
+
+      where.userId = req.user.id; // Un usuario normal solo ve sus fichajes
     }
 
     // ✅ Si es admin y no pasó filtros, limitamos la consulta a 100 fichajes
@@ -119,13 +124,15 @@ const listarFichajes = async (req, res) => {
         },
       ],
       order: [["createdAt", "DESC"]],
-      limit: limiteResultados, // 🚀 Si es admin y no usó filtros, traemos máximo 100 registros
+      limit: limiteResultados,
     });
 
     // ✅ Manejo cuando no hay fichajes
     if (fichajes.length === 0) {
-      return res.status(200).json({
-        mensaje: "No se encontraron fichajes. Si esperás ver fichajes, asegurate de haber registrado alguno.",
+      return res.status(404).json({
+        mensaje: req.user.rol !== "admin"
+          ? "No tienes fichajes registrados en tu cuenta."
+          : "No se encontraron fichajes en la base de datos.",
         fichajes: [],
       });
     }
@@ -150,6 +157,7 @@ const listarFichajes = async (req, res) => {
     res.status(500).json({ mensaje: "Error al listar fichajes", error: error.message });
   }
 };
+
 
 module.exports = { listarFichajes };
 
