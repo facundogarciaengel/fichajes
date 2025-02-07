@@ -42,18 +42,23 @@ const iniciarSesion = async (req, res) => {
     if (!esValido) {
       return res.status(401).json({ mensaje: "Contraseña incorrecta" });
     }
+    console.log("Usuario encontrado:", usuario);
 
     // 🚀 Generamos el token con ID y ROL
     const token = jwt.sign(
-      { id: usuario.id, rol: usuario.rol }, // ✅ Aquí agregamos el rol al token
+       { id: usuario.id, rol: usuario.rol || "usuario"}, // ✅ Aquí agregamos el rol al token
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
+    const decoded = jwt.decode(token);
+    console.log("Token generado:", decoded);
+
+
     res.json({
       mensaje: "Inicio de sesión exitoso",
       token, // ✅ Devuelve el token correcto
-      usuario: { id: usuario.id, rol: usuario.rol } // ✅ Para verificar el rol en la respuesta
+      usuario: { id: usuario.id, rol: usuario.rol, decode: decoded } // ✅ Para verificar el rol en la respuesta
     });
 
   } catch (error) {
