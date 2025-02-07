@@ -46,10 +46,11 @@ const iniciarSesion = async (req, res) => {
 
     // 🚀 Generamos el token con ID y ROL
     const token = jwt.sign(
-       { id: usuario.id, rol: usuario.rol || "usuario"}, // ✅ Aquí agregamos el rol al token
-      process.env.JWT_SECRET,
+      { id: usuario.id, rol: usuario.rol },
+      process.env.JWT_SECRET + "test", // 🔥 Modificación temporal para ver si Render usa bien la variable
       { expiresIn: "1h" }
     );
+    
 
     const decoded = jwt.decode(token);
     console.log("Token generado:", decoded);
