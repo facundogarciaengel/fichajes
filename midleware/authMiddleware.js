@@ -11,6 +11,8 @@ const authenticateToken = (req, res, next) => {
     if (err) {
       return res.status(403).json({ mensaje: "Token inválido" });
     }
+    
+    console.log("✅ Token decodificado:", user); // 👀 Ver el contenido del token
 
     // ✅ Ahora `req.user` incluye el rol
     req.user = { id: user.id, rol: user.rol };

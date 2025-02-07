@@ -22,6 +22,7 @@ router.post('/crear-admin', async (req, res) => {
         password: hashedPassword,
         rol: 'admin',
       });
+      console.log("Administrador creado:", admin);
   
       res.status(201).json({ mensaje: 'Administrador creado con éxito', admin });
     } catch (error) {

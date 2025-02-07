@@ -30,7 +30,10 @@ const iniciarSesion = async (req, res) => {
   }
 
   try {
-    const usuario = await Usuario.findOne({ where: { dni } });
+    const usuario = await Usuario.findOne({
+       where: { dni },
+       attributes: ["id", "dni", "password", "rol"] // 🔥 Asegurar que traiga 'rol'
+      });
 
     if (!usuario) {
       return res.status(404).json({ mensaje: "Usuario no encontrado" });
@@ -48,7 +51,9 @@ const iniciarSesion = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    res.json({ mensaje: "Inicio de sesión exitoso", token, usuario: { id: usuario.id, rol: usuario.rol } });
+    res.json({ mensaje: "Inicio de sesión exitoso",
+       token,
+        usuario: { id: usuario.id, rol: usuario.rol } });
   } catch (error) {
     console.error("Error al iniciar sesión:", error);
     res.status(500).json({ mensaje: "Error al iniciar sesión", error: error.message });
