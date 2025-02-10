@@ -52,17 +52,11 @@ console.log("Payload antes de firmar el token:", payload);
 
 const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-console.log("Token generado:", token);
-
-
-    const decoded = jwt.decode(token);
-    console.log("Token generado:", decoded);
-
 
     res.json({
       mensaje: "Inicio de sesión exitoso",
       token, // ✅ Devuelve el token correcto
-      usuario: { id: usuario.id, rol: usuario.rol, decode: decoded } // ✅ Para verificar el rol en la respuesta
+      usuario: { id: usuario.id, rol: usuario.rol } // ✅ Para verificar el rol en la respuesta
     });
 
   } catch (error) {
