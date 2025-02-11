@@ -3,6 +3,8 @@ const moment = require('moment-timezone');
 const { Op, Model, where } = require('sequelize');
 const axios = require('axios');
 
+
+
 //Función para obtener la dirección a partir de las coordenadas
 const obtenerDireccion = async (coordenadas) => {
   try {
@@ -27,6 +29,22 @@ const obtenerDireccion = async (coordenadas) => {
   } catch (error) {
     console.error('Error al obtener la dirección:', error.message);
     return 'Dirección no disponible';
+  }
+};
+
+const obtenerDireccionAPI = async (req, res) => {
+  const { coordenadas } = req.query; // Recibe las coordenadas desde el frontend
+
+  if (!coordenadas) {
+    return res.status(400).json({ mensaje: 'Coordenadas no proporcionadas' });
+  }
+
+  try {
+    const direccion = await obtenerDireccion(coordenadas);
+    return res.status(200).json({ direccion });
+  } catch (error) {
+    console.error('Error obteniendo dirección:', error);
+    return res.status(500).json({ mensaje: 'Error obteniendo dirección' });
   }
 };
 
@@ -159,8 +177,5 @@ const listarFichajes = async (req, res) => {
 };
 
 
-module.exports = { listarFichajes };
-
-
-module.exports = { registrarFichaje, listarFichajes };
+module.exports = { registrarFichaje, listarFichajes, obtenerDireccionAPI };
 

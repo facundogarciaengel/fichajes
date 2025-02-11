@@ -44,7 +44,7 @@ const iniciarSesion = async (req, res) => {
     if (!esValido) {
       return res.status(401).json({ mensaje: "Contraseña incorrecta" });
     }
-    console.log("Usuario encontrado:", usuario);
+    console.log("Usuario encontrado:", usuario.id, usuario.rol);
 
     // 🚀 Generamos el token con ID y ROL
     const payload = { id: usuario.id, rol: usuario.rol };
