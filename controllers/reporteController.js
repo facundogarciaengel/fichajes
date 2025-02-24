@@ -57,14 +57,37 @@ const exportarFichajesCSV = async (req, res) => {
   }
 };
 
-// 🔹 Función para exportar fichajes en Excel
+// 🔹 Función para exportar fichajes en Excel con filtros
 const exportarFichajesExcel = async (req, res) => {
   try {
+    const { startDate, endDate, nombre, dni } = req.query;
+
+    // Construcción de filtros
+    const where = {};
+    if (startDate || endDate) {
+      where.fechaHora = {};
+      if (startDate) where.fechaHora[Op.gte] = new Date(startDate);
+      if (endDate) where.fechaHora[Op.lte] = new Date(endDate);
+    }
+
+    // Filtro por usuario
+    const usuarioWhere = {};
+    if (nombre) usuarioWhere.nombre = { [Op.like]: `%${nombre}%` };
+    if (dni) usuarioWhere.dni = dni;
+
+    // Obtener fichajes con los filtros aplicados
     const fichajes = await Fichaje.findAll({
-      include: [{ model: Usuario, as: 'usuario', attributes: ['nombre', 'dni'] }],
+      where,
+      include: [{ model: Usuario, as: 'usuario', where: usuarioWhere, attributes: ['nombre', 'dni'] }],
       order: [['fechaHora', 'DESC']],
     });
 
+    // Verificar si hay fichajes para exportar
+    if (fichajes.length === 0) {
+      return res.status(404).json({ mensaje: 'No hay fichajes para exportar' });
+    }
+
+    // Crear el libro y la hoja de cálculo en Excel
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Fichajes');
 
@@ -78,7 +101,7 @@ const exportarFichajesExcel = async (req, res) => {
       { header: 'Dirección', key: 'direccion', width: 40 },
     ];
 
-    // Agregar datos
+    // Agregar datos con formato adecuado
     fichajes.forEach((fichaje) => {
       worksheet.addRow({
         id: fichaje.id,
@@ -90,10 +113,10 @@ const exportarFichajesExcel = async (req, res) => {
       });
     });
 
-    // Aplicar estilos (opcional)
+    // Aplicar estilos a los encabezados
     worksheet.getRow(1).font = { bold: true };
 
-    // Enviar archivo Excel
+    // Enviar el archivo Excel al cliente
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', 'attachment; filename="Reporte_Fichajes.xlsx"');
 
@@ -104,5 +127,6 @@ const exportarFichajesExcel = async (req, res) => {
     res.status(500).json({ mensaje: 'Error al generar reporte Excel', error: error.message });
   }
 };
+
 
 module.exports = { exportarFichajesCSV, exportarFichajesExcel };
