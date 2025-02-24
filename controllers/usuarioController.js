@@ -50,7 +50,7 @@ const iniciarSesion = async (req, res) => {
     const payload = { id: usuario.id, rol: usuario.rol };
 console.log("Payload antes de firmar el token:", payload);
 
-const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
+const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "12h" });
 
 
     res.json({
