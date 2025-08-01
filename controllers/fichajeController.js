@@ -5,32 +5,58 @@ const axios = require('axios');
 
 
 
-//Función para obtener la dirección a partir de las coordenadas
+//Función para obtener la dirección a partir de las coordenadas desde google. la comento por si despues queremos volver a usarla. 
+// const obtenerDireccion = async (coordenadas) => {
+//   try {
+//     const apiKey = 'AIzaSyBq6q5RaIyajDkj07RjmWznT26EB5imZmk'; // Tu nueva API Key de Google Maps
+//     const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
+//       params: {
+//         latlng: coordenadas,
+//         key: apiKey,
+//         language: 'es',
+//         location_type: 'ROOFTOP', // Precisión de la dirección
+//       },
+//     });
+
+//     if (response.data.status === 'OK') {
+//       const direccion = response.data.results[0]?.formatted_address || 'Dirección no encontrada';
+//       console.log('Dirección obtenida de Google Maps:', direccion);
+//       return direccion;
+//     } else {
+//       console.error('Error en la geolocalización:', response.data.status);
+//       return 'Dirección no disponible';
+//     }
+//   } catch (error) {
+//     console.error('Error al obtener la dirección:', error.message);
+//     return 'Dirección no disponible';
+//   }
+// };
+// Función para obtener la dirección a partir de las coordenadas usando OpenCage
 const obtenerDireccion = async (coordenadas) => {
   try {
-    const apiKey = 'AIzaSyBq6q5RaIyajDkj07RjmWznT26EB5imZmk'; // Tu nueva API Key de Google Maps
-    const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
+    const apiKey = '2f93fd4351284d62837a702a2c772cc0'; // API Key de OpenCage
+    const response = await axios.get('https://api.opencagedata.com/geocode/v1/json', {
       params: {
-        latlng: coordenadas,
+        q: coordenadas,
         key: apiKey,
         language: 'es',
-        location_type: 'ROOFTOP', // Precisión de la dirección
       },
     });
 
-    if (response.data.status === 'OK') {
-      const direccion = response.data.results[0]?.formatted_address || 'Dirección no encontrada';
-      console.log('Dirección obtenida de Google Maps:', direccion);
+    if (response.data.results.length > 0) {
+      const direccion = response.data.results[0].formatted;
+      console.log('Dirección obtenida de OpenCage:', direccion);
       return direccion;
     } else {
-      console.error('Error en la geolocalización:', response.data.status);
-      return 'Dirección no disponible';
+      console.error('No se encontró dirección para esas coordenadas');
+      return 'Dirección no encontrada';
     }
   } catch (error) {
     console.error('Error al obtener la dirección:', error.message);
     return 'Dirección no disponible';
   }
 };
+
 
 const obtenerDireccionAPI = async (req, res) => {
   const { coordenadas } = req.query; // Recibe las coordenadas desde el frontend
